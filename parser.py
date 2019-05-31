@@ -53,35 +53,30 @@ class MyParser:
 		decimalDigit = plex.Range('09')
 		binaryDigit = plex.Range('01')
 		letter = plex.Range('azAZ')
+		
 		equals = plex.Str('=')
 		leftPar = plex.Str('(')
 		rightPar = plex.Str(')')
 		space = plex.Any(' \n\t')
-
-		binaryNumber = plex.Rep1(decimalDigit)
-		name = letter + plex.Rep(letter|digit)
-		printKeyword = plex.Str('print', 'PRINT')
-		andKeyword = plex.Str('and', 'AND')			
-		orKeyword = plex.Str('or', 'OR')
-		xorKeyword = plex.Str('xor', 'XOR')
-		
+		binaryNumber = plex.Rep1(binaryDigit)
+		name = letter + plex.Rep(letter|decimalDigit)
+		printKeyword = plex.Str('print')
+		andOperator = plex.Str('and')			
+		orOperator = plex.Str('or')
+		xorOperator = plex.Str('xor')
 
 		# the scanner lexicon - constructor argument is a list of (pattern,action ) tuples
 		lexicon = plex.Lexicon([
 			(space,plex.IGNORE),
-			(leftPar, 'LPAR'),		#plex.TEXT (?)
-			(rightPar, 'RPAR'),		#plex.TEXT (?)
-			(equals, 'EQUALS'),		#plex.TEXT (?)
-			(printKeyword, 'PRINT'),
+			(leftPar, plex.TEXT),		#plex.TEXT (?)
+			(rightPar, plex.TEXT),		#plex.TEXT (?)
+			(equals, plex.TEXT),		#plex.TEXT (?)
+			(printKeyword, plex.TEXT),
 			(binaryNumber, 'BINARY_NUM'),
-			
-			##### TODO:
-			##### 1. Add and, or, xor operators.
-			##### 2. Change following code according to "new" token names.
-
-
-
-			(name, 'ID')	#Identifier must be at the bottom of the lexicon so that keywords are not misidentified as Ιdentifiers.
+			(andOperator, plex.TEXT),
+			(orOperator, plex.TEXT),
+			(xorOperator, plex.TEXT),
+			(name, 'ID')				#Identifier must be at the bottom of the lexicon so that keywords are not misidentified as Ιdentifiers.
 			])
 		
 		# create and store the scanner object
@@ -121,13 +116,13 @@ class MyParser:
 		self.create_scanner(fp)
 		
 		# call parsing logic
-		self.Stmt_list()
+		self.stmt_list()
 	
 			
 	def stmt_list(self):
 		""" Stmt_list -> Stmt Stmt_list | ε """
 		
-		if self.la=='id' or self.la=='print':
+		if self.la=='ID' or self.la=='PRINT':
 			self.stmt()
 			self.stmt_list()
 		elif self.la == None:
@@ -151,7 +146,7 @@ class MyParser:
 	
 	
 	def expr(self):
-		if self.la=='lpar' or self.la=='id' or self.la=='number':
+		if self.la=='lpar' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.term()
 			self.term_tail
 		else:
@@ -162,13 +157,13 @@ class MyParser:
 			self.match('xor')
 			self.term()
 			self.term_tail()
-		elif self.la=='rPar' or self.la=='id' or self.la=='print':
+		elif self.la=='rPar' or self.la=='ID' or self.la=='print':
 			return
 		else:
 			raise ParseError("in facts: id or print expected")
 
 	def term(self):
-		if self.la=='lPar' or self.la=='id' or self.la=='number':
+		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.factor()
 			self.factor_tail()
 		else:
@@ -179,13 +174,13 @@ class MyParser:
 			self.match('or')
 			self.factor()
 			self.factor_tail()
-		elif self.la=='rPar' or self.la=='xor' or self.la=='id' or self.la=='print'
+		elif self.la=='rPar' or self.la=='xor' or self.la=='ID' or self.la=='print':
 			return
 		else:
 			raise ParseError("in facts: id or print expected")
 
 	def factor(self):
-		if self.la=='lPar' or self.la=='id' or self.la=='number':
+		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.atom()
 			self.atom_tail()
 		else:
@@ -196,21 +191,21 @@ class MyParser:
 			self.match('and')
 			self.atom()
 			self.atom_tail()
-		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='id' or self.la=='print':
+		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print':
 			return
-		else
+		else:
 			raise ParseError("in facts: id or print expected")
 
 	def atom(self):
 		if self.la=='lPar':
-			self.match('lPar'):
+			self.match('lPar')
 			self.expr()
 			self.match('rPar')
-		elif self.la=='id':
-			self.match('id')
-		elif self.la=='numbed':
-			self.match('number'
-		else
+		elif self.la=='ID':
+			self.match('ID')
+		elif self.la=='BINARY_NUM':
+			self.match('BINARY_NUM')
+		else:
 			raise ParseError("in facts: id or print expected")
 
 
