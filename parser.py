@@ -50,18 +50,38 @@ class MyParser:
 		to operate on file object fp. """
 
 		# define some pattern constructs
-		letter = plex.Range("AZaz")
-		digit = plex.Range("09")
+		decimalDigit = plex.Range('09')
+		binaryDigit = plex.Range('01')
+		letter = plex.Range('azAZ')
+		equals = plex.Str('=')
+		leftPar = plex.Str('(')
+		rightPar = plex.Str(')')
+		space = plex.Any(' \n\t')
 
-		string = plex.Rep1(letter | digit)
-		operator = plex.Any("!?()")		
-		space = plex.Any(" \t\n")
+		binaryNumber = plex.Rep1(decimalDigit)
+		name = letter + plex.Rep(letter|digit)
+		printKeyword = plex.Str('print', 'PRINT')
+		andKeyword = plex.Str('and', 'AND')			
+		orKeyword = plex.Str('or', 'OR')
+		xorKeyword = plex.Str('xor', 'XOR')
+		
 
 		# the scanner lexicon - constructor argument is a list of (pattern,action ) tuples
 		lexicon = plex.Lexicon([
-			(operator,plex.TEXT),
 			(space,plex.IGNORE),
-			(string, 'string')
+			(leftPar, 'LPAR'),		#plex.TEXT (?)
+			(rightPar, 'RPAR'),		#plex.TEXT (?)
+			(equals, 'EQUALS'),		#plex.TEXT (?)
+			(printKeyword, 'PRINT'),
+			(binaryNumber, 'BINARY_NUM'),
+			
+			##### TODO:
+			##### 1. Add and, or, xor operators.
+			##### 2. Change following code according to "new" token names.
+
+
+
+			(name, 'ID')	#Identifier must be at the bottom of the lexicon so that keywords are not misidentified as Ιdentifiers.
 			])
 		
 		# create and store the scanner object
@@ -172,13 +192,26 @@ class MyParser:
 			raise ParseError("in facts: id or print expected")
 
 	def atom_tail(self):
-		if self.la=='
+		if self.la=='and':
+			self.match('and')
+			self.atom()
+			self.atom_tail()
+		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='id' or self.la=='print':
+			return
+		else
+			raise ParseError("in facts: id or print expected")
 
-
-
-
-
-
+	def atom(self):
+		if self.la=='lPar':
+			self.match('lPar'):
+			self.expr()
+			self.match('rPar')
+		elif self.la=='id':
+			self.match('id')
+		elif self.la=='numbed':
+			self.match('number'
+		else
+			raise ParseError("in facts: id or print expected")
 
 
 
