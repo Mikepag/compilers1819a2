@@ -122,27 +122,27 @@ class MyParser:
 	def stmt_list(self):
 		""" Stmt_list -> Stmt Stmt_list | ε """
 		
-		if self.la=='ID' or self.la=='PRINT':
+		if self.la=='ID' or self.la=='print':
 			self.stmt()
 			self.stmt_list()
 		elif self.la == None:
 			return
 		else:
-			raise ParseError("in session: id or print expected")
+			raise ParseError("stmt_list: id or print expected")
 			 	
 	
 	def stmt(self):
 		""" Stmt -> id = Expr | print Expr """
 		
-		if self.la=='id':
-			self.match('id')
-			self.match('equals')
+		if self.la=='ID':
+			self.match('ID')
+			self.match('=')
 			self.expr()
 		elif self.la=='print':	
 			self.match('print')
 			self.expr()
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in stmt: id or print expected")
 	
 	
 	def expr(self):
@@ -150,51 +150,51 @@ class MyParser:
 			self.term()
 			self.term_tail
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in expr: (, id or binary number expected")
 
 	def term_tail(self):
 		if self.la=='xor':
 			self.match('xor')
 			self.term()
 			self.term_tail()
-		elif self.la=='rPar' or self.la=='ID' or self.la=='print':
+		elif self.la=='rPar' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in term_tail: xor, rpar, id or print expected")
 
 	def term(self):
 		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.factor()
 			self.factor_tail()
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in term: lPar, id or binary number expected")
 		
 	def factor_tail(self):
 		if self.la=='or':
 			self.match('or')
 			self.factor()
 			self.factor_tail()
-		elif self.la=='rPar' or self.la=='xor' or self.la=='ID' or self.la=='print':
+		elif self.la=='rPar' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in factor_tail: or, rPar, xor, id or print expected")
 
 	def factor(self):
 		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.atom()
 			self.atom_tail()
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in factor: lPar, id or binary number expected")
 
 	def atom_tail(self):
 		if self.la=='and':
 			self.match('and')
 			self.atom()
 			self.atom_tail()
-		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print':
+		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in atom_tail: and, rPar, or, xor, id or print expected")
 
 	def atom(self):
 		if self.la=='lPar':
@@ -206,7 +206,7 @@ class MyParser:
 		elif self.la=='BINARY_NUM':
 			self.match('BINARY_NUM')
 		else:
-			raise ParseError("in facts: id or print expected")
+			raise ParseError("in atom: lPar, id or binary number expected")
 
 
 
@@ -217,8 +217,8 @@ class MyParser:
 parser = MyParser()
 
 # open file for parsing
-with open("recursive-descent-parsing.txt","r") as fp:
-
+#with open("recursive-descent-parsing.txt","r") as fp:
+with open("input.txt","r") as fp:
 	# parse file
 	try:
 		parser.parse(fp)
