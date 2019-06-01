@@ -168,8 +168,8 @@ class MyParser:
 				term1 = term1^term2		# term1 XOR term2
 			if self.la==')' or self.la=='ID' or self.la=='print' or self.la==None:
 				return term1
-			#else:
-			#	raise ParseError("in expr: XOR operator expected")
+			else:
+				raise ParseError("in expr: XOR operator expected")
 		else:
 			raise ParseError("in expr: (, id or binary number expected")
 
@@ -183,8 +183,8 @@ class MyParser:
 				factor1 = factor1|factor2
 			if self.la==')' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 				return factor1
-			#else:
-			#	raise ParseError("in term: OR operator expected")
+			else:
+				raise ParseError("in term: OR operator expected")
 
 		else:
 			raise ParseError("in term: (, id or binary number expected")
@@ -199,30 +199,23 @@ class MyParser:
 				atom1 = atom1&atom2
 			if self.la==')' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 				return atom1
-			#else:
-			#	raise ParseError("in factor: AND operator expected")
+			else:
+				raise ParseError("in factor: AND operator expected")
 		else:
 			raise ParseError("in factor: (, id or binary number expected")
-
-	def atom_tail(self):
-		if self.la=='and':
-			self.match('and')
-			self.atom()
-			self.atom_tail()
-		elif self.la==')' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
-			return
-		else:
-			raise ParseError("in atom_tail: and, ), or, xor, id or print expected")
 
 	def atom(self):
 		if self.la=='(':
 			self.match('(')
-			self.expr()
+			expression = self.expr()
 			self.match(')')
 		elif self.la=='ID':
+			varname = self.val
 			self.match('ID')
 		elif self.la=='BINARY_NUM':
+			intBinNum = int(self.val,2)		# converting the BINARY_NUM's value from string to integer.
 			self.match('BINARY_NUM')
+			return intBinNum
 		else:
 			raise ParseError("in atom: (, id or binary number expected")
 
