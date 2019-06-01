@@ -76,7 +76,7 @@ class MyParser:
 		xorOperator = plex.Str('xor')
 
 		# the scanner lexicon - constructor argument is a list of (pattern,action ) tuples
-		lexicon = plex.Lexicon([
+		self.lexicon = plex.Lexicon([
 			(space,plex.IGNORE),
 			(leftPar, plex.TEXT),
 			(rightPar, plex.TEXT),
@@ -90,7 +90,7 @@ class MyParser:
 			])
 		
 		# create and store the scanner object
-		self.scanner = plex.Scanner(lexicon,fp)
+		self.scanner = plex.Scanner(self.lexicon,fp)
 		
 		# get initial lookahead
 		self.la,self.val = self.next_token()
@@ -130,8 +130,6 @@ class MyParser:
 	
 			
 	def stmt_list(self):
-		""" Stmt_list -> Stmt Stmt_list | ε """
-		
 		if self.la=='ID' or self.la=='print':
 			self.stmt()
 			self.stmt_list()
@@ -142,8 +140,6 @@ class MyParser:
 			 	
 	
 	def stmt(self):
-		""" Stmt -> id = Expr | print Expr """
-		
 		if self.la=='ID':
 			self.match('ID')
 			self.match('=')
@@ -156,7 +152,7 @@ class MyParser:
 	
 	
 	def expr(self):
-		if self.la=='lpar' or self.la=='ID' or self.la=='BINARY_NUM':
+		if self.la=='(' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.term()
 			self.term_tail
 		else:
@@ -167,56 +163,56 @@ class MyParser:
 			self.match('xor')
 			self.term()
 			self.term_tail()
-		elif self.la=='rPar' or self.la=='ID' or self.la=='print' or self.la==None:
+		elif self.la==')' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
 			raise ParseError("in term_tail: xor, rpar, id or print expected")
 
 	def term(self):
-		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
+		if self.la=='(' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.factor()
 			self.factor_tail()
 		else:
-			raise ParseError("in term: lPar, id or binary number expected")
+			raise ParseError("in term: (, id or binary number expected")
 		
 	def factor_tail(self):
 		if self.la=='or':
 			self.match('or')
 			self.factor()
 			self.factor_tail()
-		elif self.la=='rPar' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
+		elif self.la==')' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
 			raise ParseError("in factor_tail: or, rPar, xor, id or print expected")
 
 	def factor(self):
-		if self.la=='lPar' or self.la=='ID' or self.la=='BINARY_NUM':
+		if self.la=='(' or self.la=='ID' or self.la=='BINARY_NUM':
 			self.atom()
 			self.atom_tail()
 		else:
-			raise ParseError("in factor: lPar, id or binary number expected")
+			raise ParseError("in factor: (, id or binary number expected")
 
 	def atom_tail(self):
 		if self.la=='and':
 			self.match('and')
 			self.atom()
 			self.atom_tail()
-		elif self.la=='rPar' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
+		elif self.la==')' or self.la=='or' or self.la=='xor' or self.la=='ID' or self.la=='print' or self.la==None:
 			return
 		else:
-			raise ParseError("in atom_tail: and, rPar, or, xor, id or print expected")
+			raise ParseError("in atom_tail: and, ), or, xor, id or print expected")
 
 	def atom(self):
-		if self.la=='lPar':
-			self.match('lPar')
+		if self.la=='(':
+			self.match('(')
 			self.expr()
-			self.match('rPar')
+			self.match(')')
 		elif self.la=='ID':
 			self.match('ID')
 		elif self.la=='BINARY_NUM':
 			self.match('BINARY_NUM')
 		else:
-			raise ParseError("in atom: lPar, id or binary number expected")
+			raise ParseError("in atom: (, id or binary number expected")
 
 
 
