@@ -2,31 +2,41 @@
 # -*- coding: utf_8 -*-
 
 """
-Example of recursive descent parser written by hand using plex module as scanner
-NOTE: This progam is a language recognizer only.
-
-Sample grammar from p.242 of:
-Grune, Dick, Jacobs, Ceriel J.H., "Parsing Techniques, A Practical Guide" 2nd ed.,Springer 2008.
-
-Session  -> Facts Question | ( Session ) Session
-Facts    -> Fact Facts | ε
-Fact     -> ! string
-Question -> ? string
+GRAMMAR
+-------
+Stmt_list   -> Stmt Stmt_list | ε
+Stmt        -> id equals Expr | print Expr
+Expr        -> Term Term_tail
+Term_tail   -> xor Term Term_tail | ε
+Term        -> Factor Factor_tail.
+Factor_tail -> or Factor Factor_tail | ε
+Factor      -> Atom Atom_tail
+Atom_tail   -> and Atom Atom_tail | ε
+Atom        -> lPar Expr rPar | id | number
 
 FIRST sets
 ----------
-Session:  ( ? !
-Facts:    ε !
-Fact:     !
-Question: ?
+Stmt_list:		id print
+Stmt:			id print
+Term_tail:		xor
+Term:			lPar id number
+Factor_tail:	or
+Factor:			lPar id number
+Atom_tail:		and
+Atom:			lPar id number
+Expr:			lPar id number
 
 FOLLOW sets
 -----------
-Session:  # )
-Facts:    ?
-Fact:     ! ?
-Question: # )
-  
+Stmt_list:		∅
+Stmt:			id print
+Term_tail:		rPar id print
+Term:			rPar xor id print
+Factor_tail:	rPar xor id print
+Factor:			rPar or xor id print
+Atom_tail:		rPar or xor id print
+Atom:			rPar and or xor id print
+Expr:			rPar id print
 
 """
 
@@ -68,15 +78,15 @@ class MyParser:
 		# the scanner lexicon - constructor argument is a list of (pattern,action ) tuples
 		lexicon = plex.Lexicon([
 			(space,plex.IGNORE),
-			(leftPar, plex.TEXT),		#plex.TEXT (?)
-			(rightPar, plex.TEXT),		#plex.TEXT (?)
-			(equals, plex.TEXT),		#plex.TEXT (?)
+			(leftPar, plex.TEXT),
+			(rightPar, plex.TEXT),
+			(equals, plex.TEXT),
 			(printKeyword, plex.TEXT),
 			(binaryNumber, 'BINARY_NUM'),
 			(andOperator, plex.TEXT),
 			(orOperator, plex.TEXT),
 			(xorOperator, plex.TEXT),
-			(name, 'ID')				#Identifier must be at the bottom of the lexicon so that keywords are not misidentified as Ιdentifiers.
+			(name, 'ID')				# Identifier must be at the bottom of the lexicon so that keywords are not misidentified as Ιdentifiers.
 			])
 		
 		# create and store the scanner object
@@ -218,7 +228,7 @@ parser = MyParser()
 
 # open file for parsing
 #with open("recursive-descent-parsing.txt","r") as fp:
-with open("input.txt","r") as fp:
+with open("recursive-descent-parsing.txt","r") as fp:
 	# parse file
 	try:
 		parser.parse(fp)
